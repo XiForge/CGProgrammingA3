@@ -13,11 +13,11 @@
 
 // Include GLM
 // glm::vec3, glm::vec4, glm::ivec4, glm::mat4
-#include "glm.hpp"
+#include "glm/glm.hpp"
 // glm::translate, glm::rotate, glm::scale
-#include "gtc/matrix_transform.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 // glm::value_ptr
-#include "gtc/type_ptr.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 //from opengl-tutorial.org
 #include "objloader.h"
@@ -35,12 +35,12 @@ glm::mat4 ProjectionMatrixGLM;
 glm::mat4 MVP;
 glm::mat4 ModelMatrixTemp;
 
-GLuint TextureStandard;
-GLuint TextureBricks;
-GLuint TextureCrate;
-GLuint TextureTiles;
-GLuint TextureSky;
-GLuint TextureGrass;
+GLuint TextureBar;
+GLuint TextureCube1;
+GLuint TextureCube2;
+GLuint TexturePyramid;
+GLuint TextureTrapez;
+GLuint TextureFloor;
 GLuint TextureID;
 GLuint TextureBillboard;
 
@@ -72,6 +72,8 @@ float rotateAngleBar2 = 0;
 float speedFactor = 1;
 
 float timer;
+float timer2; // For Billboard Animation
+
 float uv_offset = 0.125;
 int billboard_tile_counter = 1;
 bool change_row = false;
@@ -210,20 +212,20 @@ mat4 getBillboardTransform(vec3 position, vec3 cameraPos, vec3 cameraUp) {
 }
 
 void updateUVTexture(std::vector<glm::vec2, std::allocator<glm::vec2>>* uvs_tex, int tilesInRow) {
-	for(int i = 0; i < uvs_tex->size(); i++) {
-		(*uvs_tex)[i].x +=  1.0/(float)tilesInRow;
-		if(change_row) {
-			(*uvs_tex)[i].y += 1.0/(float)tilesInRow;
+	for (int i = 0; i < uvs_tex->size(); i++) {
+		(*uvs_tex)[i].x += 1.0 / (float)tilesInRow;
+		if (change_row) {
+			(*uvs_tex)[i].y += 1.0 / (float)tilesInRow;
 		}
 	}
 	change_row = false;
 	billboard_tile_counter++;
-	if(billboard_tile_counter%tilesInRow == 0){
+	if (billboard_tile_counter%tilesInRow == 0){
 		change_row = true;
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer_billboard);
 	glBufferData(GL_ARRAY_BUFFER, uvs_billboard.size() * sizeof(glm::vec2), &uvs_billboard[0], GL_STATIC_DRAW);
-	
+
 }
 
 void Display() {
@@ -252,7 +254,7 @@ void Display() {
 	ViewMatrixGLM = glm::rotate(ViewMatrixGLM, rotateCamera, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	//Object1
-	glBindTexture(GL_TEXTURE_2D, TextureCrate);
+	glBindTexture(GL_TEXTURE_2D, TextureCube2);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(5.0f, 0.0f, 0.0f));
@@ -263,7 +265,7 @@ void Display() {
 	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
 
 	//Object2
-	glBindTexture(GL_TEXTURE_2D, TextureSky);
+	glBindTexture(GL_TEXTURE_2D, TextureTrapez);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(5.0f, 0.0f, 0.0f));
@@ -274,7 +276,7 @@ void Display() {
 	drawObject(vertexbuffer_pyramide, uvbuffer_pyramide, normalbuffer_pyramide, ModelMatrixTemp, vertices_pyramide.size());
 
 	//Object3
-	glBindTexture(GL_TEXTURE_2D, TextureTiles);
+	glBindTexture(GL_TEXTURE_2D, TexturePyramid);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(-5.0f, 0.0f, 0.0f));
@@ -285,7 +287,7 @@ void Display() {
 	drawObject(vertexbuffer_trapez, uvbuffer_trapez, normalbuffer_trapez, ModelMatrixTemp, vertices_trapez.size());
 
 	//Object4
-	glBindTexture(GL_TEXTURE_2D, TextureBricks);
+	glBindTexture(GL_TEXTURE_2D, TextureCube1);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(-5.0f, 0.0f, 0.0f));
@@ -297,7 +299,7 @@ void Display() {
 
 
 	//bar1
-	glBindTexture(GL_TEXTURE_2D, TextureStandard);
+	glBindTexture(GL_TEXTURE_2D, TextureBar);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(0.0f, 10.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -317,22 +319,22 @@ void Display() {
 	drawObject(vertexbuffer_bar2, uvbuffer_bar2, normalbuffer_bar2, ModelMatrixTemp, vertices_bar2.size());
 
 	//floor	
-	glBindTexture(GL_TEXTURE_2D, TextureGrass);
+	glBindTexture(GL_TEXTURE_2D, TextureFloor);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::scale(
 		glm::mat4(1.0f),
-		glm::vec3(10.0f, 0.1f, 10.0f));
+		glm::vec3(20.0f, 0.1f, 20.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(0.0f, -100.0f, 0.0f));
 	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
 
 	//billboard	
-	updateUVTexture(&uvs_billboard,4);
 	glBindTexture(GL_TEXTURE_2D, TextureBillboard);
 	glm::mat4 inverseView = glm::inverse(ViewMatrixGLM);
 	//glm::vec3 camPos = glm::vec3(inverseView[3].x, inverseView[3].y, inverseView[3].z);
 	glm::vec3 camPos = glm::vec3(inverseView[3].x, 0.0f, inverseView[3].z); // don't rotate on y axis
 	glm::vec3 camUp = glm::vec3(ViewMatrixGLM[0].y, ViewMatrixGLM[1].y, ViewMatrixGLM[2].y);
 	ModelMatrixTemp = getBillboardTransform(vec3(0.0f, -8.0f, 0.0f), camPos, camUp);
+	ModelMatrixTemp = glm::scale(ModelMatrixTemp, glm::vec3(2.0f));
 	drawObject(vertexbuffer_billboard, uvbuffer_billboard, normalbuffer_billboard, ModelMatrixTemp, vertices_billboard.size());
 
 	/* Clear Texture */
@@ -352,6 +354,13 @@ void OnIdle() {
 	rotateAngleBar2 += 0.00025 * speedFactor * timeDiff;
 	rotateAngleBar1 += 0.001 * speedFactor * timeDiff;
 
+	// Animation for Billboard
+	timeDiff = time - timer2;
+	if (timeDiff > 50) {
+		updateUVTexture(&uvs_billboard, 4);
+		timer2 = time;
+	}
+
 	glutPostRedisplay();
 }
 
@@ -367,13 +376,13 @@ void Initialize(void) {
 	LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
 	//texture
-	TextureStandard = loadDDS("objects/standard.dds");
-	TextureBricks = loadDDS("objects/bricks.dds");
-	TextureCrate = loadDDS("objects/crate.dds");
-	TextureTiles = loadDDS("objects/tiles.dds");
-	TextureSky = loadDDS("objects/sky.dds");
-	TextureGrass = loadDDS("objects/grass.dds");
-	TextureBillboard = loadDDS("objects/flames2.dds");
+	TextureBar = loadDDS("textures/wood.dds");
+	TextureCube1 = loadDDS("textures/bricks.dds");
+	TextureCube2 = loadDDS("textures/gold.dds");
+	TexturePyramid = loadDDS("textures/cake.dds");
+	TextureTrapez = loadDDS("textures/mosaik.dds");
+	TextureFloor = loadDDS("textures/grass.dds");
+	TextureBillboard = loadDDS("textures/flames.dds");
 
 	TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
@@ -449,7 +458,7 @@ void Initialize(void) {
 	glBufferData(GL_ARRAY_BUFFER, normals_bar2.size() * sizeof(glm::vec3), &normals_bar2[0], GL_STATIC_DRAW);
 
 	//Load billboard
-	loadOBJ("objects/flames2.obj", vertices_billboard, uvs_billboard, normals_billboard);
+	loadOBJ("objects/flames.obj", vertices_billboard, uvs_billboard, normals_billboard);
 	glGenBuffers(1, &vertexbuffer_billboard);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_billboard);
 	glBufferData(GL_ARRAY_BUFFER, vertices_billboard.size() * sizeof(glm::vec3), &vertices_billboard[0], GL_STATIC_DRAW);
