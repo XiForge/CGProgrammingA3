@@ -13,11 +13,11 @@
 
 // Include GLM
 // glm::vec3, glm::vec4, glm::ivec4, glm::mat4
-#include "glm/glm.hpp"
+#include "glm.hpp"
 // glm::translate, glm::rotate, glm::scale
-#include "glm/gtc/matrix_transform.hpp"
+#include "gtc/matrix_transform.hpp"
 // glm::value_ptr
-#include "glm/gtc/type_ptr.hpp"
+#include "gtc/type_ptr.hpp"
 
 //from opengl-tutorial.org
 #include "objloader.h"
@@ -64,11 +64,7 @@ GLuint MatrixID;
 GLuint ViewMatrixID;
 GLuint ModelMatrixID;
 
-float ProjectionMatrix[16]; /* Perspective projection matrix */
-float ViewMatrix[16]; /* Camera view matrix */ 
-float RotateMatrix[16];
-float anglee = 0;
-
+float rotateCamera = 0;
 float rotateAngleObjects = 0;
 float rotateAngleBar1 = 0;
 float rotateAngleBar2 = 0;
@@ -197,7 +193,7 @@ void Display() {
 		glm::mat4 lightRot= glm::mat4(1.0f);
 		glm::mat4 lightPosition = glm::translate(
 			glm::mat4(1.0f), 
-			glm::vec3(0.0f, 0.0f, -10.0f)
+			glm::vec3(0.0f, 0.0f, -50.0f)
 		);
 
 		glUniform3f(LightID, 0, 0, 0);
@@ -212,7 +208,7 @@ void Display() {
 			glm::mat4(1.0f),
 			glm::vec3(0.0f, 0.0f, -25.0f)); 
 		ViewMatrixGLM = glm::rotate(ViewMatrixGLM, 3.14f / 9.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-
+		ViewMatrixGLM = glm::rotate(ViewMatrixGLM, rotateCamera, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		
 		glBindTexture(GL_TEXTURE_2D, TextureCrate);
@@ -283,7 +279,7 @@ void Display() {
 		ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(5.0f, 3.0f, 0.0f));
 		ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar2, glm::vec3(0.0f, 1.0f, 0.0f));
 		drawObject(vertexbuffer_bar2, uvbuffer_bar2, normalbuffer_bar2, ModelMatrixTemp, vertices_bar2.size());
-		
+
 		glBindTexture(GL_TEXTURE_2D, TextureGrass);
 		
 		//floor
@@ -293,6 +289,12 @@ void Display() {
 			glm::vec3(10.0f, 0.1f, 10.0f));
 		ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(0.0f, -100.0f, 0.0f)); 	
 		drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
+
+		//Object4
+		/*glBindTexture(GL_TEXTURE_2D, TextureBricks);
+		ModelMatrixTemp = glm::mat4(1.0);
+		ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(-3.0f, 0.0f, 0.0f));
+		drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());	*/	
     
 	/* Swap between front and back buffer */ 
     glutSwapBuffers();
@@ -301,9 +303,9 @@ void Display() {
 }
 
 void OnIdle() {
-	
-	rotateAngleObjects += 0.0045 * speedFactor;
-	rotateAngleBar2 += 0.0025 * speedFactor;
+	rotateCamera += 0.0001 * speedFactor;
+	rotateAngleObjects -= 0.0025 * speedFactor;
+	rotateAngleBar2 += 0.00025 * speedFactor;
 	rotateAngleBar1 += 0.001 * speedFactor;
    
     glutPostRedisplay();
