@@ -23,6 +23,7 @@
 #include "objloader.h"
 #include "shader.h"
 #include "texture.h"
+#include "lib/SOIL.h"
 
 using namespace glm;
 
@@ -305,7 +306,7 @@ void Display() {
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(0.0f, -100.0f, 0.0f));
 	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
 
-	//billboard
+	//billboard	
 	glBindTexture(GL_TEXTURE_2D, TextureBillboard);
 	glm::mat4 inverseView = glm::inverse(ViewMatrixGLM);
 	//glm::vec3 camPos = glm::vec3(inverseView[3].x, inverseView[3].y, inverseView[3].z);
@@ -313,6 +314,9 @@ void Display() {
 	glm::vec3 camUp = glm::vec3(ViewMatrixGLM[0].y, ViewMatrixGLM[1].y, ViewMatrixGLM[2].y);
 	ModelMatrixTemp = getBillboardTransform(vec3(0.0f, -8.0f, 0.0f), camPos, camUp);
 	drawObject(vertexbuffer_billboard, uvbuffer_billboard, normalbuffer_billboard, ModelMatrixTemp, vertices_billboard.size());
+
+	/* Clear Texture */
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	/* Swap between front and back buffer */
 	glutSwapBuffers();
@@ -349,7 +353,7 @@ void Initialize(void) {
 	TextureTiles = loadDDS("objects/tiles.dds");
 	TextureSky = loadDDS("objects/sky.dds");
 	TextureGrass = loadDDS("objects/grass.dds");
-	TextureBillboard = loadBMP_custom("objects/uvtemplate.bmp");
+	TextureBillboard = loadDDS("objects/tree.dds");
 
 	TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
@@ -511,6 +515,9 @@ int main(int argc, char** argv) {
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
 
+	// Enable Alpha Blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	/* Set background (clear) color to blue */
 	glClearColor(0.0, 0.0, 0.35, 0.0);
