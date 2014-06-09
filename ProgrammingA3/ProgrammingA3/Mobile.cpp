@@ -81,6 +81,7 @@ float speedFactor = 1;
 float timer;
 float timer2; // For Billboard Animation
 
+//values for billboard animation
 float uv_offset = 0.125;
 int billboard_tile_counter = 1;
 bool change_row = false;
@@ -237,6 +238,7 @@ mat4 getBillboardTransform(vec3 position, vec3 cameraPos, vec3 cameraUp) {
 	return transform;
 }
 
+//animate the uv texture of the billboard
 void updateUVTexture(std::vector<glm::vec2, std::allocator<glm::vec2>>* uvs_tex, int tilesInRow) {
 	for (int i = 0; i < uvs_tex->size(); i++) {
 		(*uvs_tex)[i].x += 1.0 / (float)tilesInRow;
@@ -246,6 +248,7 @@ void updateUVTexture(std::vector<glm::vec2, std::allocator<glm::vec2>>* uvs_tex,
 	}
 	change_row = false;
 	billboard_tile_counter++;
+	//if row is walked through jump to the next row
 	if (billboard_tile_counter%tilesInRow == 0){
 		change_row = true;
 	}
@@ -367,7 +370,7 @@ void OnIdle() {
 	rotateAngleBar2 += 0.00025 * speedFactor * timeDiff;
 	rotateAngleBar1 += 0.001 * speedFactor * timeDiff;
 
-	// Animation for Billboard
+	// Timeout Animation for Billboard
 	timeDiff = time - timer2;
 	if (timeDiff > 50) {
 		updateUVTexture(&uvs_billboard, 4);
