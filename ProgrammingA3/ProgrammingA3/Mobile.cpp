@@ -42,6 +42,7 @@ GLuint TextureTiles;
 GLuint TextureSky;
 GLuint TextureGrass;
 GLuint TextureID;
+GLuint TextureBillboard;
 
 GLuint ShaderProgram;
 GLuint programID;
@@ -95,6 +96,10 @@ std::vector<glm::vec3> normals_bar1;
 std::vector<glm::vec3> vertices_bar2;
 std::vector<glm::vec2> uvs_bar2;
 std::vector<glm::vec3> normals_bar2;
+	
+std::vector<glm::vec3> vertices_billboard;
+std::vector<glm::vec2> uvs_billboard;
+std::vector<glm::vec3> normals_billboard;
 
 GLuint vertexbuffer;
 GLuint uvbuffer;
@@ -119,6 +124,10 @@ GLuint normalbuffer_bar1;
 GLuint vertexbuffer_bar2;
 GLuint uvbuffer_bar2;
 GLuint normalbuffer_bar2;
+
+GLuint vertexbuffer_billboard;
+GLuint uvbuffer_billboard;
+GLuint normalbuffer_billboard;	
 
 void drawObject(GLuint vertexbuffer, GLuint uvbuffer, GLuint normalbuffer, glm::mat4 ModelMatrix, GLuint verticesSize) {
 	glPushMatrix();
@@ -297,13 +306,13 @@ void Display() {
 	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
 
 	//billboard
-	glBindTexture(GL_TEXTURE_2D, TextureBricks);
+	glBindTexture(GL_TEXTURE_2D, TextureBillboard);
 	glm::mat4 inverseView = glm::inverse(ViewMatrixGLM);
 	//glm::vec3 camPos = glm::vec3(inverseView[3].x, inverseView[3].y, inverseView[3].z);
 	glm::vec3 camPos = glm::vec3(inverseView[3].x, 0.0f, inverseView[3].z); // don't rotate on y axis
 	glm::vec3 camUp = glm::vec3(ViewMatrixGLM[0].y, ViewMatrixGLM[1].y, ViewMatrixGLM[2].y);
 	ModelMatrixTemp = getBillboardTransform(vec3(0.0f, -8.0f, 0.0f), camPos, camUp);
-	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
+	drawObject(vertexbuffer_billboard, uvbuffer_billboard, normalbuffer_billboard, ModelMatrixTemp, vertices_billboard.size());
 
 	/* Swap between front and back buffer */
 	glutSwapBuffers();
@@ -340,6 +349,7 @@ void Initialize(void) {
 	TextureTiles = loadDDS("objects/tiles.dds");
 	TextureSky = loadDDS("objects/sky.dds");
 	TextureGrass = loadDDS("objects/grass.dds");
+	TextureBillboard = loadBMP_custom("objects/uvtemplate.bmp");
 
 	TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
@@ -413,6 +423,20 @@ void Initialize(void) {
 	glGenBuffers(1, &normalbuffer_bar2);
 	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer_bar2);
 	glBufferData(GL_ARRAY_BUFFER, normals_bar2.size() * sizeof(glm::vec3), &normals_bar2[0], GL_STATIC_DRAW);
+
+	//Load billboard
+	loadOBJ("objects/billboard.obj", vertices_billboard, uvs_billboard, normals_billboard);
+	glGenBuffers(1, &vertexbuffer_billboard);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_billboard);
+	glBufferData(GL_ARRAY_BUFFER, vertices_billboard.size() * sizeof(glm::vec3), &vertices_billboard[0], GL_STATIC_DRAW);
+
+	glGenBuffers(1, &uvbuffer_billboard);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer_billboard);
+	glBufferData(GL_ARRAY_BUFFER, uvs_billboard.size() * sizeof(glm::vec2), &uvs_billboard[0], GL_STATIC_DRAW);
+	
+	glGenBuffers(1, &normalbuffer_billboard);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer_billboard);
+	glBufferData(GL_ARRAY_BUFFER, normals_billboard.size() * sizeof(glm::vec3), &normals_billboard[0], GL_STATIC_DRAW);
 
 }
 
