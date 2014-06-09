@@ -72,6 +72,7 @@ float rotateAngleBar2 = 0;
 float speedFactor = 1;
 
 float timer;
+float uv_offset = 0.01;
 
 std::vector<glm::vec3> vertices;
 std::vector<glm::vec2> uvs;
@@ -298,6 +299,7 @@ void Display() {
 
 	//floor	
 	glBindTexture(GL_TEXTURE_2D, TextureGrass);
+
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::scale(
 		glm::mat4(1.0f),
@@ -306,6 +308,13 @@ void Display() {
 	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
 
 	//billboard
+	for(int i = 0; i < uvs_billboard.size(); i++) {
+		uvs_billboard[i].x += uv_offset;
+		uvs_billboard[i].y += uv_offset;
+
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer_billboard);
+	glBufferData(GL_ARRAY_BUFFER, uvs_billboard.size() * sizeof(glm::vec2), &uvs_billboard[0], GL_STATIC_DRAW);
 	glBindTexture(GL_TEXTURE_2D, TextureBillboard);
 	glm::mat4 inverseView = glm::inverse(ViewMatrixGLM);
 	//glm::vec3 camPos = glm::vec3(inverseView[3].x, inverseView[3].y, inverseView[3].z);
@@ -327,6 +336,7 @@ void OnIdle() {
 	rotateAngleObjects -= 0.0025 * speedFactor * timeDiff;
 	rotateAngleBar2 += 0.00025 * speedFactor * timeDiff;
 	rotateAngleBar1 += 0.001 * speedFactor * timeDiff;
+
 
 	glutPostRedisplay();
 }
