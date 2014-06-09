@@ -41,8 +41,15 @@ GLuint TextureCube2;
 GLuint TexturePyramid;
 GLuint TextureTrapez;
 GLuint TextureFloor;
-GLuint TextureID;
 GLuint TextureBillboard;
+
+GLuint TextureBarNormal;
+GLuint TextureCube1Normal;
+GLuint TextureCube2Normal;
+GLuint TexturePyramidNormal;
+GLuint TextureTrapezNormal;
+GLuint TextureFloorNormal;
+GLuint TextureBillboardNormal;
 
 GLuint ShaderProgram;
 GLuint programID;
@@ -56,7 +63,7 @@ float lightG = 1.0f;
 float lightB = 1.0f;
 
 //values for light power
-float lightPower = 50.0f;
+float lightPower = 100.0f;
 
 GLuint VertexArrayID;
 
@@ -134,7 +141,19 @@ GLuint vertexbuffer_billboard;
 GLuint uvbuffer_billboard;
 GLuint normalbuffer_billboard;	
 
-void drawObject(GLuint vertexbuffer, GLuint uvbuffer, GLuint normalbuffer, glm::mat4 ModelMatrix, GLuint verticesSize) {
+void drawObject(GLuint vertexbuffer, GLuint uvbuffer, GLuint normalbuffer, glm::mat4 ModelMatrix, GLuint verticesSize, GLuint texture, GLuint normal_texture) {
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+	int texture_location = glGetUniformLocation(programID, "myTextureSampler");
+	glUniform1i(texture_location, 0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glActiveTexture(GL_TEXTURE1);
+	glEnable(GL_TEXTURE_2D);
+	int normal_location = glGetUniformLocation(programID, "myNormalTextureSampler");
+	glUniform1i(normal_location, 1);
+	glBindTexture(GL_TEXTURE_2D, normal_texture);
+
 	glPushMatrix();
 
 	// Use our shader
@@ -195,6 +214,13 @@ void drawObject(GLuint vertexbuffer, GLuint uvbuffer, GLuint normalbuffer, glm::
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
 
 	glPopMatrix();
 }
@@ -229,10 +255,8 @@ void updateUVTexture(std::vector<glm::vec2, std::allocator<glm::vec2>>* uvs_tex,
 }
 
 void Display() {
-
 	// Clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
 	//glm::mat4 lightTrans = glm::mat4
 	glm::mat4 lightRot = glm::mat4(1.0f);
@@ -241,7 +265,7 @@ void Display() {
 		glm::vec3(0.0f, 0.0f, -50.0f)
 		);
 
-	glUniform3f(LightID, 0, 0, 0);
+	glUniform3f(LightID, lightPosition[3].x, lightPosition[3].y, lightPosition[3].z);
 	glUniform3f(LightColorID, lightR, lightG, lightB);
 	glUniform1f(LightPowerID, lightPower);
 
@@ -254,7 +278,6 @@ void Display() {
 	ViewMatrixGLM = glm::rotate(ViewMatrixGLM, rotateCamera, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	//Object1
-	glBindTexture(GL_TEXTURE_2D, TextureCube2);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(5.0f, 0.0f, 0.0f));
@@ -262,10 +285,9 @@ void Display() {
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(3.0f, -5.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleObjects, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, -3.14f / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
+	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size(), TextureCube2, TextureCube2Normal);
 
 	//Object2
-	glBindTexture(GL_TEXTURE_2D, TextureTrapez);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(5.0f, 0.0f, 0.0f));
@@ -273,10 +295,9 @@ void Display() {
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(-3.0f, -5.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleObjects, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, -3.14f / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	drawObject(vertexbuffer_pyramide, uvbuffer_pyramide, normalbuffer_pyramide, ModelMatrixTemp, vertices_pyramide.size());
+	drawObject(vertexbuffer_pyramide, uvbuffer_pyramide, normalbuffer_pyramide, ModelMatrixTemp, vertices_pyramide.size(), TextureTrapez, TextureTrapezNormal);
 
 	//Object3
-	glBindTexture(GL_TEXTURE_2D, TexturePyramid);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(-5.0f, 0.0f, 0.0f));
@@ -284,10 +305,9 @@ void Display() {
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(3.0f, 0.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleObjects, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, -3.14f / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	drawObject(vertexbuffer_trapez, uvbuffer_trapez, normalbuffer_trapez, ModelMatrixTemp, vertices_trapez.size());
+	drawObject(vertexbuffer_trapez, uvbuffer_trapez, normalbuffer_trapez, ModelMatrixTemp, vertices_trapez.size(), TexturePyramid, TexturePyramidNormal);
 
 	//Object4
-	glBindTexture(GL_TEXTURE_2D, TextureCube1);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(-5.0f, 0.0f, 0.0f));
@@ -295,50 +315,43 @@ void Display() {
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(-3.0f, 0.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleObjects, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, -3.14f / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
-
+	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size(), TextureCube1, TextureCube1Normal);
 
 	//bar1
-	glBindTexture(GL_TEXTURE_2D, TextureBar);
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(0.0f, 10.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
-	drawObject(vertexbuffer_bar1, uvbuffer_bar1, normalbuffer_bar1, ModelMatrixTemp, vertices_bar1.size());
+	drawObject(vertexbuffer_bar1, uvbuffer_bar1, normalbuffer_bar1, ModelMatrixTemp, vertices_bar1.size(), TextureBar, TextureBarNormal);
 
 	//bar23
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(-5.0f, 6.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar2, glm::vec3(0.0f, 1.0f, 0.0f));
-	drawObject(vertexbuffer_bar2, uvbuffer_bar2, normalbuffer_bar2, ModelMatrixTemp, vertices_bar2.size());
+	drawObject(vertexbuffer_bar2, uvbuffer_bar2, normalbuffer_bar2, ModelMatrixTemp, vertices_bar2.size(), TextureBar, TextureBarNormal);
 
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar1, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(5.0f, 3.0f, 0.0f));
 	ModelMatrixTemp = glm::rotate(ModelMatrixTemp, rotateAngleBar2, glm::vec3(0.0f, 1.0f, 0.0f));
-	drawObject(vertexbuffer_bar2, uvbuffer_bar2, normalbuffer_bar2, ModelMatrixTemp, vertices_bar2.size());
+	drawObject(vertexbuffer_bar2, uvbuffer_bar2, normalbuffer_bar2, ModelMatrixTemp, vertices_bar2.size(), TextureBar, TextureBarNormal);
 
-	//floor	
-	glBindTexture(GL_TEXTURE_2D, TextureFloor);
+	//floor
 	ModelMatrixTemp = glm::mat4(1.0);
 	ModelMatrixTemp = glm::scale(
 		glm::mat4(1.0f),
-		glm::vec3(20.0f, 0.1f, 20.0f));
+		glm::vec3(10.0f, 0.1f, 10.0f));
 	ModelMatrixTemp = glm::translate(ModelMatrixTemp, glm::vec3(0.0f, -100.0f, 0.0f));
-	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
+	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size(), TextureFloor, TextureFloorNormal);
 
 	//billboard	
-	glBindTexture(GL_TEXTURE_2D, TextureBillboard);
 	glm::mat4 inverseView = glm::inverse(ViewMatrixGLM);
 	//glm::vec3 camPos = glm::vec3(inverseView[3].x, inverseView[3].y, inverseView[3].z);
 	glm::vec3 camPos = glm::vec3(inverseView[3].x, 0.0f, inverseView[3].z); // don't rotate on y axis
 	glm::vec3 camUp = glm::vec3(ViewMatrixGLM[0].y, ViewMatrixGLM[1].y, ViewMatrixGLM[2].y);
 	ModelMatrixTemp = getBillboardTransform(vec3(0.0f, -8.0f, 0.0f), camPos, camUp);
 	ModelMatrixTemp = glm::scale(ModelMatrixTemp, glm::vec3(2.0f));
-	drawObject(vertexbuffer_billboard, uvbuffer_billboard, normalbuffer_billboard, ModelMatrixTemp, vertices_billboard.size());
-
-	/* Clear Texture */
-	glBindTexture(GL_TEXTURE_2D, 0);
+	drawObject(vertexbuffer_billboard, uvbuffer_billboard, normalbuffer_billboard, ModelMatrixTemp, vertices_billboard.size(), TextureBillboard, TextureBillboardNormal);
 
 	/* Swap between front and back buffer */
 	glutSwapBuffers();
@@ -377,14 +390,19 @@ void Initialize(void) {
 
 	//texture
 	TextureBar = loadDDS("textures/wood.dds");
+	TextureBarNormal = loadDDS("textures/wood_normal.dds");
 	TextureCube1 = loadDDS("textures/bricks.dds");
+	TextureCube1Normal = loadDDS("textures/bricks_normal.dds");
 	TextureCube2 = loadDDS("textures/gold.dds");
-	TexturePyramid = loadDDS("textures/cake.dds");
-	TextureTrapez = loadDDS("textures/mosaik.dds");
+	TextureCube2Normal = loadDDS("textures/gold_normal.dds");
+	TexturePyramid = loadDDS("textures/cake.dds"); 
+	TexturePyramidNormal = loadDDS("textures/cake_normal.dds");
+	TextureTrapez = loadDDS("textures/fur.dds");
+	TextureTrapezNormal = loadDDS("textures/fur_normal.dds");
 	TextureFloor = loadDDS("textures/grass.dds");
+	TextureFloorNormal = loadDDS("textures/grass_normal.dds");
 	TextureBillboard = loadDDS("textures/flames.dds");
-
-	TextureID = glGetUniformLocation(programID, "myTextureSampler");
+	TextureBillboardNormal = loadDDS("textures/flames_normal.dds");
 
 	//Load cube
 	loadOBJ("objects/cube.obj", vertices_cube, uvs_cube, normals_cube);

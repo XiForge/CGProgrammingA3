@@ -14,16 +14,26 @@ out vec4 color;
 
 // Values that stay constant for the whole mesh.
 uniform sampler2D myTextureSampler;
+uniform sampler2D myNormalTextureSampler;
 uniform mat4 MV;
 uniform vec3 LightPosition_worldspace;
 uniform vec3 LightColor;
 uniform float LightPower;
 
-void main(){	
+void main(){
+	// Extract the normal from the normal map  
+	vec3 normal = normalize(texture2D(myNormalTextureSampler, UV).rgb * 2.0 - 1.0);
+
+	// Determine where the light is positioned 
+	vec3 light_pos = normalize(vec3(0,-50,0)); 
+
+	// Calculate the lighting diffuse value  
+	float diffuse = max(dot(normal, light_pos), 0.0);  
+  
 	// Material properties
-	vec4 MaterialDiffuseColor = texture2D(myTextureSampler, UV);
-	vec4 MaterialAmbientColor = vec4(0.1,0.1,0.1,1.0) * MaterialDiffuseColor;
-	vec4 MaterialSpecularColor = vec4(0.3,0.3,0.3,1.0);
+	vec4 MaterialDiffuseColor = vec4(diffuse * texture2D(myTextureSampler, UV).rgb, texture2D(myTextureSampler, UV).a);
+	vec4 MaterialAmbientColor = vec4(0.2,0.2,0.2,1.0) * MaterialDiffuseColor;
+	vec4 MaterialSpecularColor = vec4(0.4,0.4,0.4,1.0);
 
 	// Distance to the light
 	float distance = length( LightPosition_worldspace - Position_worldspace );
@@ -48,13 +58,13 @@ void main(){
 	//  - Looking into the reflection -> 1
 	//  - Looking elsewhere -> < 1
 	float cosAlpha = clamp( dot( E,R ), 0,1 );
-	
+
 	color = 
 		// Ambient : simulates indirect lighting
 		MaterialAmbientColor +
 		// Diffuse : "color" of the object
-		MaterialDiffuseColor * vec4(LightColor,1.0) * LightPower * cosTheta / (distance*distance) +
+		MaterialDiffuseColor * vec4(LightColor, 1.0) * LightPower * cosTheta / (distance*distance) +
 		// Specular : reflective highlight, like a mirror
-		MaterialSpecularColor * vec4(LightColor,1.0) * LightPower * pow(cosAlpha,5) / (distance*distance);
+		MaterialSpecularColor * vec4(LightColor, 1.0) * LightPower * pow(cosAlpha,5) / (distance*distance);
 
 }
