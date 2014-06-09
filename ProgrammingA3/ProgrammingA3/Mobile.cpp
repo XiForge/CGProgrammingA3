@@ -23,7 +23,6 @@
 #include "objloader.h"
 #include "shader.h"
 #include "texture.h"
-#include "lib/SOIL.h"
 
 using namespace glm;
 
@@ -73,6 +72,9 @@ float rotateAngleBar2 = 0;
 float speedFactor = 1;
 
 float timer;
+float uv_offset = 0.125;
+int billboard_tile_counter = 1;
+bool change_row = false;
 
 std::vector<glm::vec3> vertices;
 std::vector<glm::vec2> uvs;
@@ -207,6 +209,23 @@ mat4 getBillboardTransform(vec3 position, vec3 cameraPos, vec3 cameraUp) {
 	return transform;
 }
 
+void updateUVTexture(std::vector<glm::vec2, std::allocator<glm::vec2>>* uvs_tex, int tilesInRow) {
+	for(int i = 0; i < uvs_tex->size(); i++) {
+		(*uvs_tex)[i].x +=  1.0/(float)tilesInRow;
+		if(change_row) {
+			(*uvs_tex)[i].y += 1.0/(float)tilesInRow;
+		}
+	}
+	change_row = false;
+	billboard_tile_counter++;
+	if(billboard_tile_counter%tilesInRow == 0){
+		change_row = true;
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer_billboard);
+	glBufferData(GL_ARRAY_BUFFER, uvs_billboard.size() * sizeof(glm::vec2), &uvs_billboard[0], GL_STATIC_DRAW);
+	
+}
+
 void Display() {
 
 	// Clear the screen
@@ -307,6 +326,7 @@ void Display() {
 	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
 
 	//billboard	
+	updateUVTexture(&uvs_billboard,4);
 	glBindTexture(GL_TEXTURE_2D, TextureBillboard);
 	glm::mat4 inverseView = glm::inverse(ViewMatrixGLM);
 	//glm::vec3 camPos = glm::vec3(inverseView[3].x, inverseView[3].y, inverseView[3].z);
@@ -353,7 +373,7 @@ void Initialize(void) {
 	TextureTiles = loadDDS("objects/tiles.dds");
 	TextureSky = loadDDS("objects/sky.dds");
 	TextureGrass = loadDDS("objects/grass.dds");
-	TextureBillboard = loadDDS("objects/tree.dds");
+	TextureBillboard = loadDDS("objects/flames2.dds");
 
 	TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
@@ -429,7 +449,7 @@ void Initialize(void) {
 	glBufferData(GL_ARRAY_BUFFER, normals_bar2.size() * sizeof(glm::vec3), &normals_bar2[0], GL_STATIC_DRAW);
 
 	//Load billboard
-	loadOBJ("objects/billboard.obj", vertices_billboard, uvs_billboard, normals_billboard);
+	loadOBJ("objects/flames2.obj", vertices_billboard, uvs_billboard, normals_billboard);
 	glGenBuffers(1, &vertexbuffer_billboard);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_billboard);
 	glBufferData(GL_ARRAY_BUFFER, vertices_billboard.size() * sizeof(glm::vec3), &vertices_billboard[0], GL_STATIC_DRAW);
