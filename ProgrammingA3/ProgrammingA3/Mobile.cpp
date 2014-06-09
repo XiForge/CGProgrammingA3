@@ -72,7 +72,9 @@ float rotateAngleBar2 = 0;
 float speedFactor = 1;
 
 float timer;
-float uv_offset = 0.01;
+float uv_offset = 0.125;
+int billboard_tile_counter = 1;
+bool change_row = false;
 
 std::vector<glm::vec3> vertices;
 std::vector<glm::vec2> uvs;
@@ -207,6 +209,21 @@ mat4 getBillboardTransform(vec3 position, vec3 cameraPos, vec3 cameraUp) {
 	return transform;
 }
 
+void updateUVTexture(std::vector<glm::vec2, std::allocator<glm::vec2>>* uvs_tex) {
+	for(int i = 0; i < uvs_tex->size(); i++) {
+		(*uvs_tex)[i].x += uv_offset;
+		if(change_row) {
+			(*uvs_tex)[i].y += uv_offset;
+		}
+	}
+	change_row = false;
+	billboard_tile_counter++;
+	if(billboard_tile_counter%8 == 0){
+		change_row = true;
+	}
+
+}
+
 void Display() {
 
 	// Clear the screen
@@ -308,11 +325,7 @@ void Display() {
 	drawObject(vertexbuffer_cube, uvbuffer_cube, normalbuffer_cube, ModelMatrixTemp, vertices_cube.size());
 
 	//billboard
-	for(int i = 0; i < uvs_billboard.size(); i++) {
-		uvs_billboard[i].x += uv_offset;
-		uvs_billboard[i].y += uv_offset;
-
-	}
+	updateUVTexture(&uvs_billboard);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer_billboard);
 	glBufferData(GL_ARRAY_BUFFER, uvs_billboard.size() * sizeof(glm::vec2), &uvs_billboard[0], GL_STATIC_DRAW);
 	glBindTexture(GL_TEXTURE_2D, TextureBillboard);
@@ -326,6 +339,7 @@ void Display() {
 	/* Swap between front and back buffer */
 	glutSwapBuffers();
 }
+
 
 void OnIdle() {
 	float time = glutGet(GLUT_ELAPSED_TIME);
@@ -360,6 +374,7 @@ void Initialize(void) {
 	TextureSky = loadDDS("objects/sky.dds");
 	TextureGrass = loadDDS("objects/grass.dds");
 	TextureBillboard = loadBMP_custom("objects/uvtemplate.bmp");
+	TextureBillboard = loadDDS("objects/Flame64SeqLayout.dds");
 
 	TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
